@@ -10,18 +10,19 @@
 char ASCCI_ART_FILENAME[] = "ASCII_art.txt";
 int TEXT_ANIMATION_NUMBER = 0;
 
-int WIDTH = 200;
-int HEIGHT = 10;
-int ART_RIGHT_BOUNDARY = 30;
+const int WIDTH = 200;
+const int HEIGHT = 10;
+const int ART_RIGHT_BOUNDARY = 30;
+const int TEXT_WIDTH = WIDTH - ART_RIGHT_BOUNDARY;
 
 
 //Structs
-struct Color
+typedef struct
 {
     int r;
     int g;
     int b;
-};
+} Color;
 
 //Forward Declaration
 
@@ -30,7 +31,7 @@ void init_buffer(char buffer[HEIGHT][WIDTH]);
 void display_buffer(char buffer[HEIGHT][WIDTH]);
 
 //Text Animation 1: Constant colour
-void text_char_color(int char_x, int char_y, char char_val);
+Color text_char_color(int char_x, int char_y, char char_val);
 //Text Animation 2: Colour gradient
 
 //Text Animation 3: Changing Colour Gradient
@@ -86,7 +87,7 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
     text_file = fopen("text.txt", "r");
 
     //Reading the file
-    char text_file_contents[WIDTH - ART_RIGHT_BOUNDARY];
+    char text_file_contents[TEXT_WIDTH];
 
     if (text_file == NULL)
     {
@@ -95,7 +96,7 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
     else
     {
         int line = 0;
-        while (fgets(text_file_contents, WIDTH - ART_RIGHT_BOUNDARY, text_file))
+        while (fgets(text_file_contents, TEXT_WIDTH, text_file))
         {   
             //Iterates through the loop and grabs every char other then \n
             for (int i = 0; i < strlen(text_file_contents) - 1; i++)
@@ -119,25 +120,50 @@ void display_buffer(char buffer[HEIGHT][WIDTH])
         for (int x = 0; x < WIDTH; x++)
         {
 
-            printf("%c", buffer[y][x]);
+            //Checks if the char is part of text or art, for animation purposes
+            if (x < ART_RIGHT_BOUNDARY)
+            {
+                printf("%c", buffer[y][x]);
+            }
+            else 
+            {
+                
+                Color color = text_char_color(x - ART_RIGHT_BOUNDARY, y, buffer[y][x]); //Get color of char
+                printf("\033[38;2;%d;%d;%dm", color.r, color.g, color.b); //Sets the color
+                printf("%c", buffer[y][x]); //Prints char
+                printf("\033[0m"); //Resets the color
+            }
         }
         printf("\n");
     }
 
 }
 
-void text_char_color(int char_x, int char_y, char char_val)
+Color text_char_color(int char_x, int char_y, char char_val)
 {
-    if (TEXT_ANIMATION_NUMBER == 0)
-    {
-        struct Color constant_color;
-        constant_color.r = 50;
-        constant_color.g = 50;
-        constant_color.b = 50;
+    //Inits the color
+    Color color = {255, 255, 255};
 
-        
+    int relative_char_x = char_x - TEXT_WIDTH;
+    //Constant color
+    if (TEXT_ANIMATION_NUMBER == 0)
+    {   
+        color.r = 255;
+        color.g = 80;
+        color.b = 100;
         
     } 
+
+    //Gradient
+    if (TEXT_ANIMATION_NUMBER == 1)
+    {   
+        color.r = 200 + 55 * (relative_char_x - TEXT_WIDTH);
+        color.g = 70 + 20 * (relative_char_x - TEXT_WIDTH);
+        color.b = 80 + 20 * ((relative_char_x - TEXT_WIDTH));
+        
+    } 
+
+    return color;
 }
 
 void boundary(int n, int line_len, int boundary_values[2][n])
