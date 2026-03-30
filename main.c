@@ -7,9 +7,9 @@
 
 
 //CONSTANTS
-int WIDTH = 100;
-int HEIGHT = 40;
-int ART_RIGHT_BOUNDARY = 50;
+int WIDTH = 200;
+int HEIGHT = 10;
+int ART_RIGHT_BOUNDARY = 30;
 
 //Structs
 struct Position
@@ -19,34 +19,40 @@ struct Position
 };
 
 //Forward Declaration
+void init_buffer(char buffer[HEIGHT][WIDTH]);
+void display_buffer(char buffer[HEIGHT][WIDTH]);
 void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t);
 void boundary(int n, int line_len, int boundary_values[2][n]);
-void display_buffer(int n, int line_length, char buffer[n][line_length]);
-void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t);
-void init_buffer(int n, int line_len, char buffer[n][line_len]);
 
 
-void init_buffer(int n, int line_len, char buffer[n][line_len])
+
+void init_buffer(char buffer[HEIGHT][WIDTH])
 {
+    //Set Buffer to be empty
+    memset(buffer, ' ', HEIGHT * WIDTH);
+
+    //ART:
+
     //Open the File
     FILE *ascii_art_file;
     ascii_art_file = fopen("ASCII_art.txt", "r");
 
     //Reading the file
-    char file_contents[line_len];
+    char ascii_file_contents[ART_RIGHT_BOUNDARY];
 
     if (ascii_art_file == NULL)
     {
-        printf("Not able to open the file");
+        printf("Not able to open the file"); //Really should be an error
     }
     else
     {
         int line = 0;
-        while (fgets(file_contents, line_len, ascii_art_file))
-        {   
-            for (int i = 0; i < strlen(file_contents); i++)
+        while (fgets(ascii_file_contents, ART_RIGHT_BOUNDARY, ascii_art_file))
+        {       
+            //Iterates through the loop and grabs every char other then \n
+            for (int i = 0; i < strlen(ascii_file_contents) - 1; i++)
             {    
-                buffer[line][i] = file_contents[i];
+                buffer[line][i] = ascii_file_contents[i];
             }
             line++;
         }
@@ -55,6 +61,35 @@ void init_buffer(int n, int line_len, char buffer[n][line_len])
     //Close the file
     fclose(ascii_art_file);
 
+    //TEXT
+
+    //Open the File
+    FILE *text_file;
+    text_file = fopen("text.txt", "r");
+
+    //Reading the file
+    char text_file_contents[WIDTH - ART_RIGHT_BOUNDARY];
+
+    if (text_file == NULL)
+    {
+        printf("Not able to open the file"); //Really should be an error
+    }
+    else
+    {
+        int line = 0;
+        while (fgets(text_file_contents, WIDTH - ART_RIGHT_BOUNDARY, text_file))
+        {   
+            //Iterates through the loop and grabs every char other then \n
+            for (int i = 0; i < strlen(text_file_contents) - 1; i++)
+            {    
+                buffer[line][ART_RIGHT_BOUNDARY + i] = text_file_contents[i];
+            }
+            line++;
+        }
+    }
+
+    //Close the file
+    fclose(text_file);
 
 }
 
@@ -110,20 +145,18 @@ void boundary(int n, int line_len, int boundary_values[2][n])
     fclose(ascii_file);
 }
 
-void display_buffer(int n, int line_length, char buffer[n][line_length])
+void display_buffer(char buffer[HEIGHT][WIDTH])
 {
 
-    for (int y = 0; y < n; y++)
+    for (int y = 0; y < HEIGHT; y++)
     {
-        int x = 0;
-        while ((x < line_length) && (buffer[y][x] != 0))
+        for (int x = 0; x < WIDTH; x++)
         {
 
             printf("%c", buffer[y][x]);
-            x++;
         }
+        printf("\n");
     }
-    printf("\n");
 
 }
 
@@ -149,18 +182,19 @@ void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t)
 int main(){
 
     //Initialise Variables
-    int line_len = 100;
-    int boundary_values[2][n];
-    char buffer[n][line_len];
+    char buffer[HEIGHT][WIDTH];
+
+
+    //int boundary_values[2][n];
 
     //Initialise Buffer
-    init_buffer(n, line_len, buffer);
+    init_buffer(buffer);
 
     //Initialise Text
     //init_text();
 
     //Display Buffer & Text
-    display_buffer(n, line_len, buffer);
+    display_buffer(buffer);
 
     //OPTIONAL: Animation -> Rotates the 2d image in 3d
 
