@@ -7,22 +7,40 @@
 
 
 //CONSTANTS
+char ASCCI_ART_FILENAME[] = "ASCII_art.txt";
+int TEXT_ANIMATION_NUMBER = 0;
+
 int WIDTH = 200;
 int HEIGHT = 10;
 int ART_RIGHT_BOUNDARY = 30;
 
+
 //Structs
-struct Position
+struct Color
 {
-    int x;
-    int y;
+    int r;
+    int g;
+    int b;
 };
 
 //Forward Declaration
+
+//Basic Functionality
 void init_buffer(char buffer[HEIGHT][WIDTH]);
 void display_buffer(char buffer[HEIGHT][WIDTH]);
-void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t);
+
+//Text Animation 1: Constant colour
+void text_char_color(int char_x, int char_y, char char_val);
+//Text Animation 2: Colour gradient
+
+//Text Animation 3: Changing Colour Gradient
+
+//Animation 1: Colour Gradient
+
+
+//Animation 2: Rotation
 void boundary(int n, int line_len, int boundary_values[2][n]);
+void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t);
 
 
 
@@ -35,7 +53,7 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
 
     //Open the File
     FILE *ascii_art_file;
-    ascii_art_file = fopen("ASCII_art.txt", "r");
+    ascii_art_file = fopen(ASCCI_ART_FILENAME, "r");
 
     //Reading the file
     char ascii_file_contents[ART_RIGHT_BOUNDARY];
@@ -93,6 +111,35 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
 
 }
 
+void display_buffer(char buffer[HEIGHT][WIDTH])
+{
+
+    for (int y = 0; y < HEIGHT; y++)
+    {
+        for (int x = 0; x < WIDTH; x++)
+        {
+
+            printf("%c", buffer[y][x]);
+        }
+        printf("\n");
+    }
+
+}
+
+void text_char_color(int char_x, int char_y, char char_val)
+{
+    if (TEXT_ANIMATION_NUMBER == 0)
+    {
+        struct Color constant_color;
+        constant_color.r = 50;
+        constant_color.g = 50;
+        constant_color.b = 50;
+
+        
+        
+    } 
+}
+
 void boundary(int n, int line_len, int boundary_values[2][n])
 {
 
@@ -145,64 +192,19 @@ void boundary(int n, int line_len, int boundary_values[2][n])
     fclose(ascii_file);
 }
 
-void display_buffer(char buffer[HEIGHT][WIDTH])
-{
-
-    for (int y = 0; y < HEIGHT; y++)
-    {
-        for (int x = 0; x < WIDTH; x++)
-        {
-
-            printf("%c", buffer[y][x]);
-        }
-        printf("\n");
-    }
-
-}
-
-/*void animation(int n, int line_length, int boundary_values[2][n]){
-
-
-    
-    display_buffer(n, line_length, buffer);
-
-    //calculate_x_z_position(1, line_length, 1, 0.2);
-    
-}*/
-
-void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t)
-{   
-    int r = (x - linewidth/2);
-    printf("%d\n", r);
-    printf("%f\n", t);
-    float x_new = r * cos(angluar_velocity * t);
-    float z_new = r * sin(angluar_velocity * t);
-}
-
 int main(){
 
-    //Initialise Variables
-    char buffer[HEIGHT][WIDTH];
-
-
-    //int boundary_values[2][n];
-
     //Initialise Buffer
+    char buffer[HEIGHT][WIDTH];
     init_buffer(buffer);
-
-    //Initialise Text
-    //init_text();
 
     //Display Buffer & Text
     display_buffer(buffer);
 
-    //OPTIONAL: Animation -> Rotates the 2d image in 3d
+    //OPTIONAL
 
-    //Set the boundary Array
-    //boundary(n, line_len, boundary_values);
+    //Text Animation:
 
-    //Displays the characters between the boundary
-    //animation(n, line_len, boundary_values);
 
     return 0;
 

@@ -9,4 +9,6 @@ A buffer with height and width is generated
 The art is processesed and displayed on the left
 The text is processed and displayed on the right
 
-The boundary for art piece is then captured and everything within it, is rotated/animated and the whole buffer is displayed.
+
+
+The art on the left can then be optionally animated, and the text on the right can stay constant.
