@@ -8,9 +8,9 @@
 
 //CONSTANTS
 char ASCCI_ART_FILENAME[] = "ASCII_art.txt";
-int TEXT_ANIMATION_NUMBER = 0;
+int TEXT_ANIMATION_NUMBER = 1;
 
-const int WIDTH = 200;
+const int WIDTH = 80;
 const int HEIGHT = 10;
 const int ART_RIGHT_BOUNDARY = 30;
 const int TEXT_WIDTH = WIDTH - ART_RIGHT_BOUNDARY;
@@ -144,7 +144,6 @@ Color text_char_color(int char_x, int char_y, char char_val)
     //Inits the color
     Color color = {255, 255, 255};
 
-    int relative_char_x = char_x - TEXT_WIDTH;
     //Constant color
     if (TEXT_ANIMATION_NUMBER == 0)
     {   
@@ -157,9 +156,10 @@ Color text_char_color(int char_x, int char_y, char char_val)
     //Gradient
     if (TEXT_ANIMATION_NUMBER == 1)
     {   
-        color.r = 200 + 55 * (relative_char_x - TEXT_WIDTH);
-        color.g = 70 + 20 * (relative_char_x - TEXT_WIDTH);
-        color.b = 80 + 20 * ((relative_char_x - TEXT_WIDTH));
+        //printf("%f", (float)(TEXT_WIDTH - relative_char_x) / (float)TEXT_WIDTH);
+        color.r = 100 + (int)150 * ((float)char_x / (float)TEXT_WIDTH);
+        color.g = 70 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
+        color.b = 80;
         
     } 
 
