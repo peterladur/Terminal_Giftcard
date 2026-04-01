@@ -10,7 +10,7 @@
 
 //CONSTANTS
 char ASCCI_ART_FILENAME[] = "ASCII_art.txt";
-int TEXT_ANIMATION_NUMBER = 1;
+int TEXT_ANIMATION_NUMBER = 3;
 
 const int WIDTH = 80;
 const int HEIGHT = 10;
@@ -32,12 +32,13 @@ typedef struct
 
 //Basic Functionality
 void init_buffer(char buffer[HEIGHT][WIDTH]);
-void display_buffer(char buffer[HEIGHT][WIDTH], int update_time_interval_ms);
+void display_buffer(char buffer[HEIGHT][WIDTH], int time_microsec);
+void refresh_screen(char buffer[HEIGHT][WIDTH], int update_time_interval_microsec);
 
 //Text Animation 1: Constant colour
 //Text Animation 2: Colour gradient
 //Text Animation 3: Changing Colour Gradient
-Color text_char_color(int char_x, int char_y, char char_val, int time_ms);
+Color text_char_color(int char_x, int char_y, char char_val, int time_microsec);
 
 
 //Art Animation 1: Colour Gradient
@@ -48,6 +49,14 @@ void boundary(int n, int line_len, int boundary_values[2][n]);
 void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t);
 
 
+//Other
+float microsec_to_sec(int microsec);
+
+
+float microsec_to_sec(int microsec)
+{
+    return (float)(microsec)/(float)1000000;
+}
 
 void init_buffer(char buffer[HEIGHT][WIDTH])
 {
@@ -119,37 +128,55 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
 
 }
 
-void display_buffer(char buffer[HEIGHT][WIDTH], int update_time_interval_ms)
-{
-    while (1){
-        for (int y = 0; y < HEIGHT; y++)
+void display_buffer(char buffer[HEIGHT][WIDTH], int time_microsec)
+{   
+    for (int y = 0; y < HEIGHT; y++)
+    {
+        for (int x = 0; x < WIDTH; x++)
         {
-            for (int x = 0; x < WIDTH; x++)
-            {
 
-                //Checks if the char is part of text or art, for animation purposes
-                if (x < ART_RIGHT_BOUNDARY)
-                {
-                    printf("%c", buffer[y][x]);
-                }
-                else 
-                {
-                    
-                    Color color = text_char_color(x - ART_RIGHT_BOUNDARY, y, buffer[y][x], 10); //Get color of char
-                    printf("\033[38;2;%d;%d;%dm", color.r, color.g, color.b); //Sets the color
-                    printf("%c", buffer[y][x]); //Prints char
-                    printf("\033[0m"); //Resets the color
-                }
+            //Checks if the char is part of text or art, for animation purposes
+            if (x < ART_RIGHT_BOUNDARY)
+            {
+                printf("%c", buffer[y][x]);
             }
-            printf("\n");
+            else 
+            {
+                
+                Color color = text_char_color(x - ART_RIGHT_BOUNDARY, y, buffer[y][x], time_microsec); //Get color of char
+                printf("\033[38;2;%d;%d;%dm", color.r, color.g, color.b); //Sets the color
+                printf("%c", buffer[y][x]); //Prints char
+                printf("\033[0m"); //Resets the color
+            }
         }
-        printf("\033[H");
-        usleep(100);
+        printf("\n");
     }
+
 
 }
 
-Color text_char_color(int char_x, int char_y, char char_val, int time_ms)
+void refresh_screen(char buffer[HEIGHT][WIDTH], int update_time_interval_microsec)
+{
+    //Starts the time
+    int time_microsec = 0;
+
+    while (1)
+    {
+        //Displays the buffer
+        display_buffer(buffer, time_microsec);
+
+        usleep(update_time_interval_microsec); //Sleep
+        printf("\033[H"); //Reset the cursor to top left
+
+        //Prevents overflow error into the negatives
+        time_microsec += update_time_interval_microsec;
+        if (time_microsec < 0){
+            time_microsec = 0;
+        }
+    }
+}
+
+Color text_char_color(int char_x, int char_y, char char_val, int time_microsec)
 {
     //Inits the color
     Color color = {255, 255, 255};
@@ -166,7 +193,6 @@ Color text_char_color(int char_x, int char_y, char char_val, int time_ms)
     //Gradient
     if (TEXT_ANIMATION_NUMBER == 2)
     {   
-        //printf("%f", (float)(TEXT_WIDTH - relative_char_x) / (float)TEXT_WIDTH);
         color.r = 180 + (int)70 * ((float)char_x / (float)TEXT_WIDTH);
         color.g = 70;
         color.b = 100 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
@@ -176,13 +202,13 @@ Color text_char_color(int char_x, int char_y, char char_val, int time_ms)
     //Changing Gradient
      if (TEXT_ANIMATION_NUMBER == 3)
     {   
-        //printf("%f", (float)(TEXT_WIDTH - relative_char_x) / (float)TEXT_WIDTH);
-        color.r = 180 + (int)70 * ((float)char_x / (float)TEXT_WIDTH) * cos(time_ms);
-        color.g = 70;
-        color.b = 100 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
+        int GRADIENT_CHANGING_ANIMATION_SPEED = 10;
+        color.r = 200 + (int) 50 * cos((microsec_to_sec(time_microsec) + 10 * (char_x + 3 * char_y)) * GRADIENT_CHANGING_ANIMATION_SPEED);
+        color.g = 70 + (int) 10 * cos(microsec_to_sec(time_microsec) * GRADIENT_CHANGING_ANIMATION_SPEED);
+        color.b = 110 + (int) 10 * cos(microsec_to_sec(time_microsec) * GRADIENT_CHANGING_ANIMATION_SPEED);
         
-    }    
-
+    }  
+      
     return color;
 }
 
@@ -245,7 +271,14 @@ int main(){
     init_buffer(buffer);
 
     //Display Buffer & Text
-    display_buffer(buffer, 10);
+    if (TEXT_ANIMATION_NUMBER != 3)
+    {  
+        display_buffer(buffer, 0);
+    }
+    else
+    {
+        refresh_screen(buffer, 10);
+    }
 
     //OPTIONAL
 
