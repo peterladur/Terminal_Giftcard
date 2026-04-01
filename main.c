@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include<unistd.h>
+
 
 #define TRUE 1
 #define FALSE 0
@@ -12,11 +14,13 @@ int TEXT_ANIMATION_NUMBER = 1;
 
 const int WIDTH = 80;
 const int HEIGHT = 10;
-const int ART_RIGHT_BOUNDARY = 30;
+const int ART_RIGHT_BOUNDARY = 20;
 const int TEXT_WIDTH = WIDTH - ART_RIGHT_BOUNDARY;
 
 
+
 //Structs
+
 typedef struct
 {
     int r;
@@ -28,15 +32,15 @@ typedef struct
 
 //Basic Functionality
 void init_buffer(char buffer[HEIGHT][WIDTH]);
-void display_buffer(char buffer[HEIGHT][WIDTH]);
+void display_buffer(char buffer[HEIGHT][WIDTH], int update_time_interval_ms);
 
 //Text Animation 1: Constant colour
-Color text_char_color(int char_x, int char_y, char char_val);
 //Text Animation 2: Colour gradient
-
 //Text Animation 3: Changing Colour Gradient
+Color text_char_color(int char_x, int char_y, char char_val, int time_ms);
 
-//Animation 1: Colour Gradient
+
+//Art Animation 1: Colour Gradient
 
 
 //Animation 2: Rotation
@@ -47,6 +51,9 @@ void calculate_x_z_position(int x, int linewidth, int angluar_velocity, float t)
 
 void init_buffer(char buffer[HEIGHT][WIDTH])
 {
+
+    printf("\033[?25l"); // Hide the cursor
+
     //Set Buffer to be empty
     memset(buffer, ' ', HEIGHT * WIDTH);
 
@@ -112,40 +119,43 @@ void init_buffer(char buffer[HEIGHT][WIDTH])
 
 }
 
-void display_buffer(char buffer[HEIGHT][WIDTH])
+void display_buffer(char buffer[HEIGHT][WIDTH], int update_time_interval_ms)
 {
-
-    for (int y = 0; y < HEIGHT; y++)
-    {
-        for (int x = 0; x < WIDTH; x++)
+    while (1){
+        for (int y = 0; y < HEIGHT; y++)
         {
+            for (int x = 0; x < WIDTH; x++)
+            {
 
-            //Checks if the char is part of text or art, for animation purposes
-            if (x < ART_RIGHT_BOUNDARY)
-            {
-                printf("%c", buffer[y][x]);
+                //Checks if the char is part of text or art, for animation purposes
+                if (x < ART_RIGHT_BOUNDARY)
+                {
+                    printf("%c", buffer[y][x]);
+                }
+                else 
+                {
+                    
+                    Color color = text_char_color(x - ART_RIGHT_BOUNDARY, y, buffer[y][x], 10); //Get color of char
+                    printf("\033[38;2;%d;%d;%dm", color.r, color.g, color.b); //Sets the color
+                    printf("%c", buffer[y][x]); //Prints char
+                    printf("\033[0m"); //Resets the color
+                }
             }
-            else 
-            {
-                
-                Color color = text_char_color(x - ART_RIGHT_BOUNDARY, y, buffer[y][x]); //Get color of char
-                printf("\033[38;2;%d;%d;%dm", color.r, color.g, color.b); //Sets the color
-                printf("%c", buffer[y][x]); //Prints char
-                printf("\033[0m"); //Resets the color
-            }
+            printf("\n");
         }
-        printf("\n");
+        printf("\033[H");
+        usleep(100);
     }
 
 }
 
-Color text_char_color(int char_x, int char_y, char char_val)
+Color text_char_color(int char_x, int char_y, char char_val, int time_ms)
 {
     //Inits the color
     Color color = {255, 255, 255};
 
     //Constant color
-    if (TEXT_ANIMATION_NUMBER == 0)
+    if (TEXT_ANIMATION_NUMBER == 1)
     {   
         color.r = 255;
         color.g = 80;
@@ -154,14 +164,24 @@ Color text_char_color(int char_x, int char_y, char char_val)
     } 
 
     //Gradient
-    if (TEXT_ANIMATION_NUMBER == 1)
+    if (TEXT_ANIMATION_NUMBER == 2)
     {   
         //printf("%f", (float)(TEXT_WIDTH - relative_char_x) / (float)TEXT_WIDTH);
-        color.r = 100 + (int)150 * ((float)char_x / (float)TEXT_WIDTH);
-        color.g = 70 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
-        color.b = 80;
+        color.r = 180 + (int)70 * ((float)char_x / (float)TEXT_WIDTH);
+        color.g = 70;
+        color.b = 100 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
         
     } 
+
+    //Changing Gradient
+     if (TEXT_ANIMATION_NUMBER == 3)
+    {   
+        //printf("%f", (float)(TEXT_WIDTH - relative_char_x) / (float)TEXT_WIDTH);
+        color.r = 180 + (int)70 * ((float)char_x / (float)TEXT_WIDTH) * cos(time_ms);
+        color.g = 70;
+        color.b = 100 + (int)100 * ((float)char_x / (float)TEXT_WIDTH);
+        
+    }    
 
     return color;
 }
@@ -225,12 +245,12 @@ int main(){
     init_buffer(buffer);
 
     //Display Buffer & Text
-    display_buffer(buffer);
+    display_buffer(buffer, 10);
 
     //OPTIONAL
 
     //Text Animation:
-
+    
 
     return 0;
 
